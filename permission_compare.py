@@ -1,35 +1,31 @@
-import xml.etree.ElementTree as ET
-
-tree1 = ET.parse('TorchAndroidManifest.xml')
-root1 = tree1.getroot()
-
-print
-
-print "The first application requests the following permission:"
-
-array1 = []
-
-for child in root1.iter('uses-permission'):
-		# print child.tag, child.attrib
-		array1.append(child.get('{http://schemas.android.com/apk/res/android}name'))
-		print child.get('{http://schemas.android.com/apk/res/android}name')
-
-tree2 = ET.parse('TorchMalwareAndroidManifest.xml')
-root2 = tree2.getroot()
-
-print 
-
-print "The second application requests the following permission:"
-
-array2 = []
-
-for child in root2.iter('uses-permission'):
-		# print child.tag, child.attrib
-		array2.append(child.get('{http://schemas.android.com/apk/res/android}name'))
-		print child.get('{http://schemas.android.com/apk/res/android}name')
-
-print
-
-for permission in array2:
-	if permission not in array1:
-		print "The permission ", permission, " is not requested by the first application"
+import sys
+import os
+import io
+import subprocess
+import shutil
+from xml.dom import minidom
+#########################################################################
+##Function	: main()
+##Purpose	: it all begins here
+#########################################################################
+def main():
+	manifestClean = minidom.parse("AndroidManifest.xml")
+	manifestMalware = minidom.parse("AndroidManifest-Malware.xml")
+	cleanPermissions = manifestClean.getElementsByTagName('uses-permission')
+	malwarePermissions = manifestMalware.getElementsByTagName('uses-permission')
+	listOfExtraPermissions = [];
+	bool = False
+	for listItem in malwarePermissions:
+		for listItem2 in cleanPermissions:
+			if listItem2.attributes['android:name'].value == listItem.attributes['android:name'].value:
+				bool = True
+		if bool == False:
+			listOfExtraPermissions.append(listItem.attributes['android:name'].value.replace("android.permission.",""))
+		else:
+			bool = False
+	print("The suspicious application has the following extra permissions")
+	for a in listOfExtraPermissions:
+		print(a)
+#Set the global variables here
+if __name__ == '__main__':
+	main()
